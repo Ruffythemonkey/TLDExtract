@@ -17,3 +17,7 @@ Kurz: `TLDExtractor.Extract(...)` akzeptiert eine `string`-Darstellung einer Dom
 ## Beispiele
 
 C# (String):
+```c#
+using TLDExtract;
+var result = TLDExtractor.Extract("seraphim.escsoft.de"); Console.WriteLine(result.ToString());
+// Beispiel-Ausgabe: // ExtractResult(subdomain='www', domain='seraphim', suffix='escsoft.de', suffix type='ICANN')
