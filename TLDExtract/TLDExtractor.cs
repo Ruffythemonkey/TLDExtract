@@ -42,15 +42,15 @@ namespace TLDExtract
         /// <exception cref="NotImplementedException">Thrown if an unsupported state is encountered during extraction.</exception>
         public static ExtractResult Extract(string url)
         {
-           
-            
+
+
             if (Uri.TryCreate(url, UriKind.Absolute, out var cleandurl))
                 url = cleandurl.Host;
 
             var result = new ExtractResult();
 
             var hostName = url.ToLowerInvariant().Trim();
-            
+
             //split at point and reverse it
             var sections = url.Split('.').Reverse();
 
@@ -121,10 +121,10 @@ namespace TLDExtract
                     || new FileInfo(SuffixFilePath).CreationTimeUtc.AddDays(RenewSuffixFileDays) <= DateTime.UtcNow
                     || RenewSuffixFileDays <= 0)
                 {
-                    field = LoadSuffixDatFromWebAsync()
-                         .GetAwaiter()
-                         .GetResult()
-                         .CreateSuffixJsonFile();
+                    field = Task.Run(() => LoadSuffixDatFromWebAsync())
+                          .GetAwaiter()
+                          .GetResult()
+                          .CreateSuffixJsonFile();
                     return field;
                 }
 
