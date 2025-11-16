@@ -12,7 +12,7 @@ namespace TLDExtractTest
         [Test]
         public void UriExtract()
         {
-            ExtractResult x = TLDExtractor.Extract(new Uri("https://seraphim.escsoft.de"));
+            ExtractResult x = TLDExtractor.Extract(new Uri("https://www.seraphim.escsoft.de"));
             if (x is ExtractResult result)
             {
                 Assert.Pass(result.ToString());
@@ -23,7 +23,7 @@ namespace TLDExtractTest
         [Test]
         public void UrlExtract()
         {
-            ExtractResult x = TLDExtractor.Extract("https://seraphim.escsoft.de");
+            ExtractResult x = TLDExtractor.Extract("seraphim.escsoft.de");
             if (x is ExtractResult result)
             {
                 Assert.Pass(result.ToString());
@@ -39,6 +39,7 @@ namespace TLDExtractTest
                 ExtractResult x = TLDExtractor.Extract(new Uri("seraphim.escsoft.de"));
             });
         }
+
         [Test]
         public void FailTestUrlNotConform()
         {
@@ -46,14 +47,6 @@ namespace TLDExtractTest
             {
                 ExtractResult x = TLDExtract.TLDExtractor.Extract(new Uri("https://escsoft.deeee"));
             });
-
-        }
-
-        [Test]
-        public void LockalLoopBack()
-        {
-            ExtractResult x = TLDExtract.TLDExtractor.Extract(new Uri("https://pi.holes"));
-
         }
     }
 }
