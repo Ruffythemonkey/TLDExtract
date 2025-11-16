@@ -9,7 +9,7 @@
     <PackageProjectUrl>https://github.com/Ruffythemonkey/TLDExtract</PackageProjectUrl>
     <Description>TldExtract uses publicsuffix.org to extract the individual elements of a domain.</Description>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>0.0.1</Version>
+    <Version>0.0.2</Version>
     <RepositoryUrl>https://github.com/Ruffythemonkey/TLDExtract</RepositoryUrl>
     <PackageTags>Tld;Domain;internet</PackageTags>
     <PackageId>TLDExtract.url</PackageId>
