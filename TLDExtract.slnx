@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="TLDExtract/TLDExtract.csproj" />
+  <Project Path="TLDExtractTest/TLDExtractTest.csproj" />
+</Solution>
