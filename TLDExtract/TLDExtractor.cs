@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Reflection.Metadata.Ecma335;
+using System.Text.Json;
 
 namespace TLDExtract
 {
@@ -41,63 +42,8 @@ namespace TLDExtract
         /// empty.</exception>
         /// <exception cref="NotImplementedException">Thrown if an unsupported state is encountered during extraction.</exception>
         public static ExtractResult Extract(string url)
-        {
+            => ExtractResultA(url).res;
 
-
-            if (Uri.TryCreate(url, UriKind.Absolute, out var cleandurl))
-                url = cleandurl.Host;
-
-            var result = new ExtractResult();
-
-            var hostName = url.ToLowerInvariant().Trim();
-
-            //split at point and reverse it
-            var sections = url.Split('.').Reverse();
-
-            if (hostName.Length > 255)
-                throw new TLDExtractException("Domain name length cannot be longer than 255 characters");
-
-            string newSuffix = "";
-            State state = State.suffix;
-
-            foreach (var item in sections)
-            {
-                if (string.IsNullOrEmpty(item))
-                    throw new TLDExtractException("Domain lable cannot null or empty");
-
-                if (item.Length > 63)
-                    throw new TLDExtractException("Domain label length cannot be more than 63 characters (ref: rfc1035)");
-
-                switch (state)
-                {
-                    case State.suffix:
-                        newSuffix = (item + "." + result.Suffix).Trim('.');
-                        if (Suffixes.ContainsKey(newSuffix))
-                        {
-                            result.Suffix = newSuffix;
-                            result.SuffixType = Suffixes[newSuffix];
-                        }
-                        else
-                        {
-                            if (string.IsNullOrWhiteSpace(result.Suffix))
-                            {
-                                throw new TLDExtractException("Domain suffix cannot be empty");
-                            }
-                            result.Domain = item;
-                            state = State.subdomain;
-                        }
-                        break;
-                    case State.subdomain:
-                        result.SubDomain = item + "." + result.SubDomain;
-                        break;
-                    default:
-                        throw new NotImplementedException();
-                }
-            }
-
-            result.SubDomain = result.SubDomain.TrimEnd('.');
-            return result;
-        }
 
         /// <summary>
         /// Extracts structured information from the specified URL.
@@ -106,11 +52,84 @@ namespace TLDExtract
         /// <returns>An <see cref="ExtractResult"/> containing the extracted data from the provided URL.</returns>
         public static ExtractResult Extract(Uri url) => Extract(url.ToString());
 
+        public static bool TryExtract(string url, out ExtractResult? result)
+        {
+            var x = ExtractResultA(url, false);
+            result = x.isUrl ? x.res : null;
+            return x.isUrl;
+        }
+
+        public static bool TryExtract(Uri url,out ExtractResult? result)
+            => TryExtract(url.ToString(), out result);
+
+
         private enum State
         {
             suffix,
             subdomain
         }
+
+        private static (ExtractResult res, bool isUrl) ExtractResultA(string url, bool throwing = true)
+        {
+            var result = new ExtractResult();
+
+            // Normalize URL → extract host if possible
+            if (Uri.TryCreate(url, UriKind.Absolute, out var clean))
+                url = clean.Host;
+
+            var hostName = url.ToLowerInvariant().Trim();
+            var sections = hostName.Split('.').Reverse();
+
+            // Short Methode
+            (ExtractResult, bool) Fail(string msg)
+                => throwing ? throw new TLDExtractException(msg) : (result, false);
+
+            if (hostName.Length > 255)
+                return Fail("Domain name length cannot be longer than 255 characters");
+
+            string newSuffix = "";
+            State state = State.suffix;
+
+            foreach (var part in sections)
+            {
+                if (string.IsNullOrEmpty(part))
+                    return Fail("Domain label cannot be null or empty");
+
+                if (part.Length > 63)
+                    return Fail("Domain label length cannot exceed 63 characters (RFC1035)");
+
+                switch (state)
+                {
+                    case State.suffix:
+                        newSuffix = (part + "." + result.Suffix).Trim('.');
+                        if (Suffixes.TryGetValue(newSuffix, out var type))
+                        {
+                            result.Suffix = newSuffix;
+                            result.SuffixType = type;
+                        }
+                        else
+                        {
+                            if (string.IsNullOrWhiteSpace(result.Suffix))
+                                return Fail("Domain suffix cannot be empty");
+
+                            result.Domain = part;
+                            state = State.subdomain;
+                        }
+                        break;
+
+                    case State.subdomain:
+                        result.SubDomain = part + "." + result.SubDomain;
+                        break;
+
+                    default:
+                        return Fail("Unhandled parsing state");
+                }
+            }
+
+            result.SubDomain = result.SubDomain.TrimEnd('.');
+            return (result, true);
+        }
+
 
         private static Dictionary<string, DomainSuffixType> SetSuffixesProperty(ref Dictionary<string, DomainSuffixType> field)
         {

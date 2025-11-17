@@ -48,5 +48,38 @@ namespace TLDExtractTest
                 ExtractResult x = TLDExtract.TLDExtractor.Extract(new Uri("https://escsoft.deeee"));
             });
         }
+
+        [Test]
+        public void TryExtractUrlStringTest()
+        {
+            var x = TLDExtract.TLDExtractor.TryExtract("escsoft.de", out var y);
+
+            if (x && y is ExtractResult)
+                Assert.Pass(y.ToString());
+
+            Assert.Fail();
+        }
+
+        [Test]
+        public void TryExtractFailString()
+        {
+            var x = TLDExtract.TLDExtractor.TryExtract("def.url1", out var y);
+
+            if (!x && y is null)
+                Assert.Pass();
+
+            Assert.Fail();
+        }
+
+        [Test]
+        public void TryExtractUriTest()
+        {
+            var x = TLDExtract.TLDExtractor.TryExtract(new Uri("https://escsoft.co.uk"), out var y);
+            if (x && y is ExtractResult)
+            {
+                Assert.Pass(y.ToString());
+            }
+            Assert.Fail();
+        }
     }
 }
